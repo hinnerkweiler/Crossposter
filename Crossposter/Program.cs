@@ -1,4 +1,4 @@
-﻿using MastodonService;
+﻿using SocialService;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -64,13 +64,13 @@ namespace MastodonPoster
             bool success;
             if (images.Count > 0)
             {
-                var imageUploads = images.Select(imagePath => new MastodonService.Models.ImageUpload
+                var imageUploads = images.Select(imagePath => new SocialService.Models.ImageUpload
                 {
                     FileName = System.IO.Path.GetFileName(imagePath),
                     Image = new ByteArrayContent(System.IO.File.ReadAllBytes(imagePath))
                 }).ToList();
 
-                success = await client.PostMultipleImagesAsync(status, new MastodonService.Models.ImagesList { Images = imageUploads });
+                success = await client.PostMultipleImagesAsync(status, new SocialService.Models.ImagesList { Images = imageUploads });
             }
             else
             {

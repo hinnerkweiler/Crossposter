@@ -10,7 +10,9 @@ namespace MastodonPoster
     {
         static async Task Main(string[] args)
         {
-            string accessToken = null;
+            string mastodonAccessToken = null;
+            string faceBookAccessToken = Environment.GetEnvironmentVariable("FACEBOOK_ACCESS_TOKEN") ?? "";
+            string pageId = Environment.GetEnvironmentVariable("FACEBOOK_PAGE_ID") ?? "";
             string status = null;
             List<string> images = new List<string>();
             
@@ -28,7 +30,7 @@ namespace MastodonPoster
                     case "--token":
                         if (i + 1 < args.Length)
                         {
-                            accessToken = args[++i];
+                            mastodonAccessToken = args[++i];
                         }
                         break;
                     case "--status":
@@ -44,8 +46,8 @@ namespace MastodonPoster
                 }
             }
 
-            accessToken ??= Environment.GetEnvironmentVariable("MASTODON_ACCESS_TOKEN") ?? string.Empty;
-            if (string.IsNullOrEmpty(accessToken))
+            mastodonAccessToken ??= Environment.GetEnvironmentVariable("MASTODON_ACCESS_TOKEN") ?? string.Empty;
+            if (string.IsNullOrEmpty(mastodonAccessToken))
             {
                 Console.WriteLine("Please provide an access token for your Mastodon account as an argument '--token' or set the environment variable MASTODON_ACCESS_TOKEN.");
                 return;
@@ -57,7 +59,7 @@ namespace MastodonPoster
                 return;
             }
 
-            var client = new MastodonClient(accessToken);
+            var client = new MastodonClient(mastodonAccessToken);
 
             bool success;
             if (images.Count > 0)

@@ -1,4 +1,4 @@
-namespace MastodonService.Models;
+namespace SocialService.Models;
 
 public class ImageUpload
 {

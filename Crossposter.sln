@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MastodonService", "MastodonService\MastodonService.csproj", "{03AC6925-9638-44B7-9F2A-85CEEFF6F8D8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SocialService", "SocialService\SocialService.csproj", "{03AC6925-9638-44B7-9F2A-85CEEFF6F8D8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Crossposter", "Crossposter\Crossposter.csproj", "{8D2EE160-1834-4422-BA0E-B0B66324F3BB}"
 EndProject

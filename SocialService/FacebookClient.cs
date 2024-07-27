@@ -118,20 +118,57 @@ public class FacebookClient
         }
     } 
     
+    public async Task<string> GetPageIdAsync()
+    {
+        var requestUri = $"https://graph.facebook.com/v20.0/me/accounts?access_token={_accessToken}";
+        var response = await _httpClient.GetAsync(requestUri);
+        var responseContent = await response.Content.ReadAsStringAsync();
+        var responseJson = JsonDocument.Parse(responseContent).RootElement;
+        return responseJson.GetProperty("data")[0].GetProperty("id").GetString() ?? string.Empty;
+    }
+    
+    public async Task<string> GetPageFeedAsync()
+    {
+        var requestUri = $"https://graph.facebook.com/v20.0/{_pageId}/feed?access_token={_accessToken}";
+        var response = await _httpClient.GetAsync(requestUri);
+        var responseContent = await response.Content.ReadAsStringAsync();
+        return responseContent;
+    }
+    
     public async Task<bool> PostImagesListAsync(string message, Models.ImagesList images)
     {
-        var requestUri = $"https://graph.facebook.com/v20.0/{_pageId}/photos";
-        var content = new MultipartFormDataContent();
-        content.Add(new StringContent(message), "message");
+        var mediaIds = new List<string>();
+
         foreach (var image in images.Images)
         {
-            content.Add(new ByteArrayContent(await image.Image.ReadAsByteArrayAsync()), "image", image.FileName);
+            var requestUri = $"https://graph.facebook.com/v20.0/{_pageId}/photos";
+            var content = new MultipartFormDataContent
+            {
+                { new ByteArrayContent(await image.Image.ReadAsByteArrayAsync()), "source", image.FileName },
+                { new StringContent(_accessToken), "access_token" },
+                { new StringContent("false"), "published" } // Ensure the image is not published immediately
+            };
+
+            var response = await _httpClient.PostAsync(requestUri, content);
+            if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"Error uploading image: {response.StatusCode}");
+                return false;
+            }
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var mediaId = JsonDocument.Parse(responseContent).RootElement.GetProperty("id").GetString();
+            mediaIds.Add(mediaId);
         }
-        content.Add(new StringContent(_accessToken), "access_token");
+
+        var mediaIdsString = string.Join(",", mediaIds.Select(id => $"{{\"media_fbid\":\"{id}\"}}"));
+        var postRequestUri = $"https://graph.facebook.com/v20.0/{_pageId}/feed";
+        var postContent = new StringContent($"{{\"message\":\"{message}\",\"attached_media\":[{mediaIdsString}],\"access_token\":\"{_accessToken}\"}}", Encoding.UTF8, "application/json");
+
         try
         {
-            var response = await _httpClient.PostAsync(requestUri, content);
-            return response.IsSuccessStatusCode;
+            var postResponse = await _httpClient.PostAsync(postRequestUri, postContent);
+            return postResponse.IsSuccessStatusCode;
         }
         catch (Exception e)
         {
